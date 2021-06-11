@@ -1,62 +1,77 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
-import Quotes from "./quotes";
-import { Button, Cards } from "@material-ui/core";
+import Quote from "./quote";
+import { Button, NativeSelect, FormControl } from "@material-ui/core";
 
 function App() {
-  const [quotes, setQuotes] = useState([]);
-  // const [loading, isLoading] = useState(false);
+  const URL = "https://type.fit/api/quotes";
+  const [quote, setQuote] = useState(null);
+  const [authorNames, setAuthorNames] = useState([]);
+  const [authorSelected, setAuthorSelected] = useState("");
 
-  const getQuotes = async () => {
-    // isLoading(true);
+  const getQuote = async () => {
     try {
       function random(min, max) {
         return Math.floor(Math.random() * (max - min)) + min;
       }
-      let randomValue = random(0, 1643);
+
+      const results = await fetch(URL);
+      const data = await results.json();
+      let randomValue = random(0, data.length);
       console.log(randomValue);
 
-      const results = await fetch("https://type.fit/api/quotes");
-      const data = await results.json();
+      const singleQuote = data[randomValue];
 
-      const filteredList = data.filter((_, index) => {
-        return index === randomValue;
-      });
-      setQuotes(filteredList);
-      console.log(filteredList);
-      // isLoading(false);
+      setQuote(singleQuote);
     } catch (error) {
       console.log(error);
     }
   };
 
-  // const getQuotes = async () => {
-  //   await fetch("https://type.fit/api/quotes")
-  //     .then(function (response) {
-  //       return response.json();
-  //     })
-  //     .then(function (data) {
-  //       setQuotes(data);
-  //       console.log(data);
-  //     })
-  //     .catch((error) => {
-  //       console.log(error);
-  //     });
-  // };
+  const getAuthors = async () => {
+    const results = await fetch(URL);
+    const data = await results.json();
+
+    const filtredAuthor = data
+      .map((value) => {
+        return value.author;
+      })
+      .filter((authorName) => {
+        return authorName !== null;
+      });
+    console.log(filtredAuthor);
+    setAuthorNames(filtredAuthor);
+  };
 
   const handleClickBtn = () => {
-    getQuotes();
+    getQuote();
   };
+
+  const handleAuthorChange = (e) => {
+    setAuthorSelected(e.target.value);
+    console.log(e.target.value);
+  };
+
+  useEffect(() => {
+    getAuthors();
+  }, []);
 
   return (
     <div className="App">
-      {quotes.map((quote) => (
-        <Quotes text={quote.text} author={quote.author} />
-      ))}
-
+      {quote && <Quote text={quote.text} author={quote.author} />}
       <Button variant="contained" color="primary" onClick={handleClickBtn}>
-        Get The Quote
+        Get Random Quote
       </Button>
+      <FormControl>
+        <NativeSelect value={authorSelected} onChange={handleAuthorChange}>
+          <option value="">Pick Your Author</option>
+          {authorNames.map((authorName, i) => (
+            <option key={i} value={authorName}>
+              {authorName}
+            </option>
+          ))}
+        </NativeSelect>
+      </FormControl>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import React from "react";
 
-const Quotes = ({ author, quotes, text }) => {
+const Quote = ({ author, quotes, text }) => {
   return (
     <div>
       {quotes ? null : (
@@ -13,4 +13,4 @@ const Quotes = ({ author, quotes, text }) => {
   );
 };
 
-export default Quotes;
+export default Quote;
