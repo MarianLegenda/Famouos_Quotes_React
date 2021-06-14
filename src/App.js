@@ -8,19 +8,18 @@ function App() {
   const [quote, setQuote] = useState(null);
   const [authorNames, setAuthorNames] = useState([]);
   const [authorSelected, setAuthorSelected] = useState("");
+  const [defaultQoutesArray, setDefaultQuotesArray] = useState([]);
 
-  const getQuote = async () => {
+  function random(min, max) {
+    return Math.floor(Math.random() * (max - min)) + min;
+  }
+
+  const getQuote = () => {
     try {
-      function random(min, max) {
-        return Math.floor(Math.random() * (max - min)) + min;
-      }
-
-      const results = await fetch(URL);
-      const data = await results.json();
-      let randomValue = random(0, data.length);
+      let randomValue = random(0, defaultQoutesArray.length);
       console.log(randomValue);
 
-      const singleQuote = data[randomValue];
+      const singleQuote = defaultQoutesArray[randomValue];
 
       setQuote(singleQuote);
     } catch (error) {
@@ -28,9 +27,22 @@ function App() {
     }
   };
 
-  const getAuthors = async () => {
+  const getAuthorQuote = (newAuthor) => {
+    try {
+      const filteredArray = defaultQoutesArray.filter((quote) => {
+        return quote.author === newAuthor;
+      });
+      setQuote(filteredArray[random(0, filteredArray.length)]);
+      console.log(filteredArray);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const fetchData = async () => {
     const results = await fetch(URL);
     const data = await results.json();
+    setDefaultQuotesArray(data);
 
     const filtredAuthor = data
       .map((value) => {
@@ -39,7 +51,7 @@ function App() {
       .filter((authorName) => {
         return authorName !== null;
       });
-    console.log(filtredAuthor);
+
     setAuthorNames(filtredAuthor);
   };
 
@@ -49,11 +61,11 @@ function App() {
 
   const handleAuthorChange = (e) => {
     setAuthorSelected(e.target.value);
-    console.log(e.target.value);
+    getAuthorQuote(e.target.value);
   };
 
   useEffect(() => {
-    getAuthors();
+    fetchData();
   }, []);
 
   return (
